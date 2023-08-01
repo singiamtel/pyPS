@@ -1,4 +1,5 @@
 from websockets import client
+from messages import MessageHandler
 from parser import parse, commands, sys
 import asyncio
 from config import socket_url
@@ -21,6 +22,7 @@ async def updater(ws : client.WebSocketClientProtocol):
         #clear file contents
         commands_file.seek(0)
         commands_file.truncate()
+        print('len(messages):', MessageHandler().get_messages_len())
 
 async def ainput(string: str) -> str:
     await asyncio.to_thread(sys.stdout.write, f'{string} ')
@@ -36,9 +38,9 @@ async def process(ws, msg):
         msg = msg.decode('utf-8') if type(msg) == bytes else str(msg)
         roomid, cmd, args = parse(msg)
         print(f'cmd: {cmd}')
-        if cmd in commands and commands[cmd].get('process') != None:
-            print(f'Processing {cmd}')
-            await commands[cmd]['process'](ws, args)
+        processing_func = commands[cmd]['process']
+        if processing_func is not None:
+            await processing_func(ws, args)
         elif cmd == 'pm':
             print('pm to', args[0], ' from ', args[1], ':', args[2])
         elif cmd == 'queryresponse':

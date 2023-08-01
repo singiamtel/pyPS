@@ -1,10 +1,12 @@
-# here i hide the ugly code
+# here i hide the ugly codeugl
 # please don't tell anyone
 
 import json
 from sys import stderr
+from typing import List
 from bs4 import BeautifulSoup
 import requests
+from messages import MessageHandler, Message, ChatMessage
 from config import username, password, rooms
 
 def removenewline(string):
@@ -28,8 +30,9 @@ def updateuser_parser(cmd, args):
         print('Received invalid JSON from server: ' + args[3], file=stderr)
         return (cmd, args)
 
-def init_parser(cmd, args):
-    my_dict = {}
+def init_parser(cmd, args: List[str]):
+    msg_handler = MessageHandler()
+    my_dict = {} 
     my_dict['roomtype'] = removenewline(args[0])
     my_dict['title'] = removenewline(args[2])
     my_dict['users'] = removenewline(args[4]).split(',')
@@ -43,22 +46,27 @@ def init_parser(cmd, args):
         if msg_type == 'raw':
             msg_content = parse_html(args[i+1])
             i += 2
-            message = (msg_type, msg_content)
+            message = Message(msg_type, msg_content)
             my_dict['messages'].append(message)
-        else:
+            msg_handler.add_message(message)
+        elif msg_type == 'c:':
             msg_id = args[i+1]
             msg_user = removenewline(args[i+2])
-            msg_content = parse_html(args[i+3]) if msg_type == 'raw' else removenewline(args[i+3])
-            message = (msg_type, msg_id, msg_user, msg_content)
+
+            msg_content = parse_html(args[i+1]) if msg_type == 'raw' else removenewline(args[i+3])
+            message = ChatMessage(msg_type, msg_content, msg_user, msg_id)
+            msg_handler.add_message(message)
             i += 4
+        else:
+            print('Unknown message type: ' + msg_type, file=stderr)
+            i += 1
         if i >= len(args):
             break
-    return (cmd, [my_dict])
+    return (cmd, [my_dict]) # for compatibility with other parsers
 
 def parse_html(html):
     soup = BeautifulSoup(html, features="html.parser")
     return soup.get_text().strip()
-
 
 
 async def login(ws, args):
