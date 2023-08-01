@@ -1,12 +1,12 @@
-# here i hide the ugly codeugl
-# please don't tell anyone
+# Here I hide the ugly code
+# Please don't tell anyone
 
 import json
 from sys import stderr
 from typing import List
 from bs4 import BeautifulSoup
 import requests
-from messages import MessageHandler, Message, ChatMessage
+from messages import MessageHandler, Message
 from config import username, password, rooms
 
 def removenewline(string):
@@ -52,9 +52,8 @@ def init_parser(cmd, args: List[str]):
         elif msg_type == 'c:':
             msg_id = args[i+1]
             msg_user = removenewline(args[i+2])
-
-            msg_content = parse_html(args[i+1]) if msg_type == 'raw' else removenewline(args[i+3])
-            message = ChatMessage(msg_type, msg_content, msg_user, msg_id)
+            msg_content = removenewline(args[i+3])
+            message = Message(msg_type, msg_content, msg_user, msg_id)
             msg_handler.add_message(message)
             i += 4
         else:
@@ -103,3 +102,12 @@ async def challstr(ws, args):
     await ws.send(f'|/avatar supernerd')
     await ws.send(f'|/trn {username}')
     # await ws.send(f'|/query roomlist')
+
+def c_parser(cmd, args):
+    msg_handler = MessageHandler()
+    msg_id = args[0]
+    msg_user = removenewline(args[1])
+    msg_content = removenewline(args[2])
+    message = Message(cmd, msg_content, msg_user, msg_id)
+    msg_handler.add_message(message)
+    return (cmd, [message])

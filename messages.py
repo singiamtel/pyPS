@@ -1,12 +1,16 @@
 from dataclasses import dataclass
 from typing import TypedDict
 
+from events import EventEmitter
+
 # Singleton class for handling messages
 class MessageHandler():
+    event_emitter : EventEmitter
     instance = None
     def __init__(self):
         if not MessageHandler.instance:
             MessageHandler.instance = MessageHandler.__MessageHandler()
+            MessageHandler.event_emitter = EventEmitter()
 
     def __getattr__(self, name):
         return getattr(self.instance, name)
@@ -19,6 +23,7 @@ class MessageHandler():
             self.messages.append(message)
             if len(self.messages) > 1000:
                 self.messages.pop(0) # oh no
+            MessageHandler.event_emitter.emit('message', message)
 
         def get_messages(self):
             return self.messages
@@ -32,16 +37,13 @@ class MessageHandler():
 
 @dataclass
 class Message():
-    def __init__(self, msg_type, msg_content):
-        self.msg_type: str = msg_type
-        self.msg_content: str = msg_content
-
-
-class ChatMessage(Message):
-    id: str # user id
-    user: str
-    def __init__(self, msg_type, msg_content, user, id):
-        super().__init__(msg_type, msg_content)
+    msg_content: str
+    msg_type: str
+    id: str | None # user id
+    user: str | None 
+    def __init__(self, msg_type, msg_content, user=None, id=None):
+        self.msg_type = msg_type
+        self.msg_content = msg_content
         self.user = user
         self.id = id
 

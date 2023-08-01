@@ -1,7 +1,8 @@
 import sys
 from dataclasses import dataclass
 import traceback
-from uglyfile import challstr, challstr_parser, init_parser, json, updateuser_parser
+from messages import Message
+from uglyfile import c_parser, challstr, challstr_parser, init_parser, json, updateuser_parser
 from typing import Callable, Optional, TypedDict, cast
 
 class Command(TypedDict):
@@ -86,8 +87,8 @@ commands: dict[str, Command] = {
             'process': None,
             },
         'c:': {
-            'args': [ ('userid', str), ('user', str), ('message', str)],
-            'weirdParse': None,
+            'args': [ ('message', Message)],
+            'weirdParse': c_parser,
             'process': None,
             },
         'queryresponse': {
