@@ -1,5 +1,5 @@
 from websockets import client
-from messages import MessageHandler
+from bot import Bot
 from parser import parse, commands, sys
 import asyncio
 from config import socket_url

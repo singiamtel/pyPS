@@ -6,7 +6,7 @@ from sys import stderr
 from typing import List
 from bs4 import BeautifulSoup
 import requests
-from messages import MessageHandler, Message
+from bot import Bot, Message
 from config import username, password, rooms
 
 def removenewline(string):
@@ -17,21 +17,22 @@ def removenewline(string):
         return string
 
 
-def challstr_parser(cmd, args):
+def challstr_parser(roomid, cmd, args):
     return (cmd, ['|'.join(args)])
 
-def updateuser_parser(cmd, args):
+def updateuser_parser(roomid, cmd, args):
     # 'args': [('user', str), ('named', int), ('avatar', str), ('settings', dict)],
     try:
         parsed = json.loads(args[3])
         new_args = [*args[:3], parsed]
+        print('Parsed settings: ' + str(parsed), file=stderr)
         return (cmd, new_args)
     except json.decoder.JSONDecodeError:
         print('Received invalid JSON from server: ' + args[3], file=stderr)
         return (cmd, args)
 
-def init_parser(cmd, args: List[str]):
-    msg_handler = MessageHandler()
+def init_parser(roomid, cmd, args: List[str]):
+    bot = Bot()
     my_dict = {} 
     my_dict['roomtype'] = removenewline(args[0])
     my_dict['title'] = removenewline(args[2])
@@ -40,21 +41,22 @@ def init_parser(cmd, args: List[str]):
     # all messages
     my_dict['messages'] = []
     # for i in range(7, len(args), 4):
+    bot.add_room(roomid, my_dict['title'])
     i = 7
     while True:
         msg_type = args[i]
         if msg_type == 'raw':
-            msg_content = parse_html(args[i+1])
+            content = parse_html(args[i+1])
             i += 2
-            message = Message(msg_type, msg_content)
+            message = Message(roomid, msg_type, content)
             my_dict['messages'].append(message)
-            msg_handler.add_message(message)
+            bot.add_message(roomid, message)
         elif msg_type == 'c:':
             msg_id = args[i+1]
-            msg_user = removenewline(args[i+2])
-            msg_content = removenewline(args[i+3])
-            message = Message(msg_type, msg_content, msg_user, msg_id)
-            msg_handler.add_message(message)
+            user = removenewline(args[i+2])
+            content = removenewline(args[i+3])
+            message = Message(roomid, msg_type, content, user, msg_id)
+            bot.add_message(roomid, message)
             i += 4
         else:
             print('Unknown message type: ' + msg_type, file=stderr)
@@ -103,11 +105,11 @@ async def challstr(ws, args):
     await ws.send(f'|/trn {username}')
     # await ws.send(f'|/query roomlist')
 
-def c_parser(cmd, args):
-    msg_handler = MessageHandler()
+def c_parser(roomid, cmd, args):
+    msg_handler = Bot()
     msg_id = args[0]
     msg_user = removenewline(args[1])
     msg_content = removenewline(args[2])
-    message = Message(cmd, msg_content, msg_user, msg_id)
+    message = Message(roomid, cmd, msg_content, msg_user, msg_id)
     msg_handler.add_message(message)
     return (cmd, [message])

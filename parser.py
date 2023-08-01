@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 import traceback
-from messages import Message
+from bot import Message
 from uglyfile import c_parser, challstr, challstr_parser, init_parser, json, updateuser_parser
 from typing import Callable, Optional, TypedDict, cast
 
@@ -130,7 +130,7 @@ commands: dict[str, Command] = {
 
 def parse(data: str):
     arr = data.split('|')
-    roomid = arr[0]
+    roomid = arr[0].lstrip('>').strip()
     cmd = arr[1]
     args = arr[2:]
     if cmd not in commands:
@@ -142,7 +142,7 @@ def parse(data: str):
     else:
         if 'weirdParse' in commands[cmd] and commands[cmd]['weirdParse'] is not None:
             # weirdparse is defined for this command, but we need to cast it
-            cmd, args = cast(Callable, commands[cmd]['weirdParse'])(cmd, args)
+            cmd, args = cast(Callable, commands[cmd]['weirdParse'])(roomid, cmd, args)
         # if any argument is a dict, json.loads it
         for i in range(len(commands[cmd]['args'])):
             try:
