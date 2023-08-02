@@ -1,5 +1,6 @@
 # Example of how to use the library
 import lib
+import os
 import asyncio
 
 from bot import Bot, Message
@@ -21,5 +22,8 @@ def eval(message: Message):
 Bot().event_emitter.on('message', handle_message)
 Bot().event_emitter.on('*', event_handler)
 
+# change this to your username and password
+my_username = os.getenv('username')
+my_password = os.getenv('password')
 
-asyncio.run(lib.start_bot())
+asyncio.run(lib.start_bot(username=my_username, password=my_password))

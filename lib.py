@@ -1,3 +1,4 @@
+from os import getenv
 from websockets import client
 from bot import Bot
 from parser import parse, commands, sys
@@ -48,14 +49,17 @@ async def process(ws, msg):
         elif cmd == 'init':
             my_dict = args[0]
             current_rooms.append(my_dict)
-            # print(current_rooms[-1]['id'])
 
-async def start_bot():
-    async for ws in client.connect(socket_url):
+async def start_bot(username, password):
+    bot = Bot()
+    bot.set_credentials(username, password)
+    async with client.connect(socket_url) as ws:
         asyncio.create_task(updater(ws))
         # asyncio.create_task(process_input(ws))
         async for msg in ws:
             asyncio.create_task(process(ws, msg))
 
 if __name__ == '__main__':
-    asyncio.run(start_bot())
+    username = getenv('username')
+    password = getenv('password')
+    asyncio.run(start_bot(username, password))

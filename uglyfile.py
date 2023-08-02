@@ -7,7 +7,7 @@ from typing import List
 from bs4 import BeautifulSoup
 import requests
 from bot import Bot, Message
-from config import username, password, rooms
+from config import rooms
 
 def removenewline(string):
     try:
@@ -71,6 +71,9 @@ def parse_html(html):
 
 
 async def login(ws, args):
+    bot = Bot()
+    username = bot.get_username()
+    password = bot.get_password()
     if username == None or password == None:
         raise Exception('Bot credentials not set')
     post_response = requests.post('https://play.pokemonshowdown.com/api/login', params={
@@ -94,6 +97,8 @@ async def login(ws, args):
 
 async def challstr(ws, args):
     # print('Received challstr, logging in')
+    bot = Bot()
+    username = bot.get_username()
     res = await login(ws, args)
     if res == None:
         print('Could not log in')

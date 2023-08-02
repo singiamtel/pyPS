@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import traceback
 from bot import Message
 from uglyfile import c_parser, challstr, challstr_parser, init_parser, json, updateuser_parser
-from typing import Callable, Optional, TypedDict, cast
+from typing import Callable, TypedDict, cast
 
 class Command(TypedDict):
     args: list

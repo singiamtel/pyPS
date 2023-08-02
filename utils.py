@@ -1,5 +1,4 @@
 import re
-from typing import Any
 
 def toID(s) -> str:
     # /[^a-z0-9]/g

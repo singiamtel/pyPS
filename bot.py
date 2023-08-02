@@ -18,10 +18,22 @@ class Bot():
         def __init__(self):
             self.messages = []
             self.rooms = {}
+            self.username = None
+            self.password = None
 
         def add_room(self, roomid, name):
             self.rooms[roomid] = Room(roomid, name)
             Bot.event_emitter.emit('joinroom', (roomid, name))
+
+        def set_credentials(self, username, password):
+            self.username = username
+            self.password = password
+
+        def get_username(self):
+            return self.username
+
+        def get_password(self):
+            return self.password
 
         def remove_room(self, room):
             self.rooms.pop(room)
