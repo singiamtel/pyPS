@@ -54,8 +54,9 @@ async def start_bot(username, password):
     bot = Bot()
     bot.set_credentials(username, password)
     async with client.connect(socket_url) as ws:
+        bot.set_ws(ws)
         asyncio.create_task(updater(ws))
-        # asyncio.create_task(process_input(ws))
+        asyncio.create_task(process_input(ws))
         async for msg in ws:
             asyncio.create_task(process(ws, msg))
 

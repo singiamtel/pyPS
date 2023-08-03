@@ -15,6 +15,7 @@ class Bot():
         return getattr(self.instance, name)
 
     class __Bot:
+        ws = None
         def __init__(self):
             self.messages = []
             self.rooms = {}
@@ -24,6 +25,9 @@ class Bot():
         def add_room(self, roomid, name):
             self.rooms[roomid] = Room(roomid, name)
             Bot.event_emitter.emit('joinroom', (roomid, name))
+
+        def set_ws(self, ws):
+            self.ws = ws
 
         def set_credentials(self, username, password):
             self.username = username
@@ -39,17 +43,22 @@ class Bot():
             self.rooms.pop(room)
             Bot.event_emitter.emit('leaveroom', room)
 
-        def add_message(self, roomid, message):
+        def add_message(self, roomid, message, event=True):
             if roomid not in self.rooms:
                 raise Exception(f'Room {roomid} not found')
             self.rooms[roomid].add_message(message)
-            Bot.event_emitter.emit('message', message)
+            if event: Bot.event_emitter.emit('message', message)
 
         def get_messages(self):
             return self.messages
 
         def get_messages_len(self):
             return len(self.messages)
+        
+        def send_message(self, roomid, message):
+            if not self.ws:
+                raise Exception('Websocket not set')
+            self.ws.send(f'{roomid}|{message}')
 
         def clear_messages(self):
             self.messages = []
@@ -81,4 +90,7 @@ class Room():
         self.messages.append(message)
         if len(self.messages) > 1000:
             self.messages.pop(0)
+
+    def send_message(self, message):
+        pass
 
