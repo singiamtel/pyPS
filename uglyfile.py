@@ -25,7 +25,6 @@ def updateuser_parser(roomid, cmd, args):
     try:
         parsed = json.loads(args[3])
         new_args = [*args[:3], parsed]
-        print('Parsed settings: ' + str(parsed), file=stderr)
         return (cmd, new_args)
     except json.decoder.JSONDecodeError:
         print('Received invalid JSON from server: ' + args[3], file=stderr)
@@ -50,13 +49,13 @@ def init_parser(roomid, cmd, args: List[str]):
             i += 2
             message = Message(roomid, msg_type, content)
             my_dict['messages'].append(message)
-            bot.add_message(roomid, message)
+            bot.add_message(roomid, message, event=False)
         elif msg_type == 'c:':
             msg_id = args[i+1]
             user = removenewline(args[i+2])
             content = removenewline(args[i+3])
             message = Message(roomid, msg_type, content, user, msg_id)
-            bot.add_message(roomid, message)
+            bot.add_message(roomid, message, event=False)
             i += 4
         else:
             print('Unknown message type: ' + msg_type, file=stderr)
@@ -116,5 +115,5 @@ def c_parser(roomid, cmd, args):
     msg_user = removenewline(args[1])
     msg_content = removenewline(args[2])
     message = Message(roomid, cmd, msg_content, msg_user, msg_id)
-    msg_handler.add_message(message)
+    msg_handler.add_message(roomid,message)
     return (cmd, [message])
